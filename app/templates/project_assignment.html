@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Assignment Form</title>
+</head>
+<body>
+    <h1>Project Assignment Form</h1>
+    <p>Complete your profile to get assigned to internal projects.</p>
+
+    <form>
+        <label for="projects">Available Projects</label>
+        <br><br>
+
+        <select id="projects" name="project_ids" multiple size="8">
+            {% for project in projects %}
+                <option value="{{ project.id }}">{{ project.name }}</option>
+            {% endfor %}
+        </select>
+    </form>
+</body>
+</html>
