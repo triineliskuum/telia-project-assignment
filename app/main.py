@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 
 from .database import Base, engine, SessionLocal
 from . import models
-from .models import Project
+from .models import Project, Employee
 
 app = FastAPI()
 
@@ -21,11 +21,14 @@ def show_form(request: Request):
             "project_assignment.html",
             {
                 "request": request,
-                "projects": projects
+                "projects": projects,
+                "form_data": {},
+                "success_message": None
             }
         )
     finally:
         db.close()
+
 
 @app.post("/submit", response_class=HTMLResponse)
 def submit_form(
@@ -38,17 +41,59 @@ def submit_form(
     additional_skills: str = Form(""),
     project_ids: list[int] = Form(...)
 ):
-    return HTMLResponse(f"""
-        <h1>Form received successfully</h1>
-        <p><strong>Full name:</strong> {full_name}</p>
-        <p><strong>Email:</strong> {email}</p>
-        <p><strong>Experience level:</strong> {experience_level}</p>
-        <p><strong>Primary stack:</strong> {primary_stack}</p>
-        <p><strong>Preferred duration:</strong> {preferred_duration}</p>
-        <p><strong>Additional skills:</strong> {additional_skills}</p>
-        <p><strong>Selected project IDs:</strong> {project_ids}</p>
-        <p><a href="/">Back to form</a></p>     
-    """)
+    db = SessionLocal()
+    try:
+        employee = db.query(Employee).filter(Employee.email == email).first()
+        selected_projects = db.query(Project).filter(Project.id.in_(project_ids)).all()
+
+        if employee is None:
+            employee = Employee(
+                full_name = full_name,
+                email = email,
+                experience_level = experience_level,
+                primary_stack = primary_stack,
+                preferred_duration = preferred_duration,
+                additional_skills = additional_skills,
+                projects = selected_projects
+            )
+            db.add(employee)
+            success_message = "Profile saved successfully."
+        else:
+            employee.full_name = full_name
+            employee.experience_level = experience_level
+            employee.primary_stack = primary_stack
+            employee.preferred_duration = preferred_duration
+            employee.additional_skills = additional_skills
+            employee.projects = selected_projects
+            success_message = "Profile updated successfully."
+        
+        db.commit()
+        db.refresh(employee)
+
+        projects = db.query(Project).all()
+
+        form_data = {
+            "full_name": employee.full_name,
+            "email": employee.email,
+            "experience_level": employee.experience_level,
+            "primary_stack": employee.primary_stack,
+            "preferred_duration": employee.preferred_duration,
+            "additional_skills": employee.additional_skills,
+            "project_ids": [project.id for project in employee.projects]
+        }
+
+        return templates.TemplateResponse(
+            "project_assignment.html",
+            {
+                "request": request,
+                "projects": projects,
+                "form_data": form_data,
+                "success_message": success_message
+            }
+        )
+    finally:
+        db.close()
+
 
 @app.get("/projects")
 def get_projects():
