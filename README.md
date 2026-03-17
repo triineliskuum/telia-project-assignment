@@ -29,9 +29,9 @@ cd telia-project-assignment
 
 python -m venv venv
 
-source venv/bin/activate   # Mac/Linux
+source venv/bin/activate   (Mac/Linux)
 
-venv\Scripts\activate      # Windows
+venv\Scripts\activate      (Windows)
 
 ### 3. Install dependencies
 
