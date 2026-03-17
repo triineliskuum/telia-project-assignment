@@ -4,85 +4,118 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Project Assignment Form</title>
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-    <h1>Project Assignment Form</h1>
-    <p>Complete your profile to get assigned to internal projects.</p>
+    <div class="container">
+        <h1>Project Assignment Form</h1>
+        <p>Complete your profile to get assigned to internal projects.</p>
 
-    {% if success_message %}
-        <p><strong>{{ success_message }}</strong></p>
-    {% endif %}
+        {% if success_message %}
+            <div class="success-message">{{ success_message }}</div>
+        {% endif %}
 
-    <form action="/submit" method="post">
-        <label for="full_name">Full Name</label><br>
-        <input
-            type="text"
-            id="full_name"
-            name="full_name"
-            value="{{ form_data.get('full_name', '') }}"
-        ><br><br>
-
-        <label for="email">Email Address</label><br>
-        <input
-            type="email"
-            id="email"
-            name="email"
-            value="{{ form_data.get('email', '') }}"
-        ><br><br>
-
-        <label for="experience_level">Experience Level</label><br>
-        <select id="experience_level" name="experience_level">
-            <option value="">Select your level</option>
-            <option value="junior" {% if form_data.get('experience_level') == 'junior' %}selected{% endif %}>Junior (0–2 years)</option>
-            <option value="mid" {% if form_data.get('experience_level') == 'mid' %}selected{% endif %}>Mid-level (2–5 years)</option>
-            <option value="senior" {% if form_data.get('experience_level') == 'senior' %}selected{% endif %}>Senior (5+ years)</option>
-        </select><br><br>
-
-        <label for="primary_stack">Primary Technology Stack</label><br>
-        <select id="primary_stack" name="primary_stack">
-            <option value="">Choose one</option>
-            <option value="backend" {% if form_data.get('primary_stack') == 'backend' %}selected{% endif %}>Backend Development</option>
-            <option value="frontend" {% if form_data.get('primary_stack') == 'frontend' %}selected{% endif %}>Frontend Development</option>
-            <option value="fullstack" {% if form_data.get('primary_stack') == 'fullstack' %}selected{% endif %}>Full-Stack Development</option>
-            <option value="data" {% if form_data.get('primary_stack') == 'data' %}selected{% endif %}>Data Engineering</option>
-            <option value="devops" {% if form_data.get('primary_stack') == 'devops' %}selected{% endif %}>DevOps</option>
-            <option value="mobile" {% if form_data.get('primary_stack') == 'mobile' %}selected{% endif %}>Mobile Development</option>
-        </select><br><br>
-
-        <label for="projects">Available Projects</label><br>
-        <select id="projects" name="project_ids" multiple size="8">
-            {% for project in projects %}
-                <option
-                    value="{{ project.id }}"
-                    {% if project.id in form_data.get('project_ids', []) %}selected{% endif %}
+        <form id="assignmentForm" action="/submit" method="post" novalidate>
+            <div class="form-group">
+                <label for="full_name">Full Name *</label>
+                <input
+                    type="text"
+                    id="full_name"
+                    name="full_name"
+                    value="{{ form_data.get('full_name', '') }}"
                 >
-                    {{ project.name }}
-                </option>
-            {% endfor %}
-        </select><br><br>
+                <div class="error">{{ errors.get('full_name', '') }}</div>
+            </div>
 
-        <label>Preferred Project Duration</label><br>
-        <input type="radio" id="short" name="preferred_duration" value="short"
-               {% if form_data.get('preferred_duration') == 'short' %}checked{% endif %}>
-        <label for="short">Short-term (1–3 months)</label><br>
+            <div class="form-group">
+                <label for="email">Email Address *</label>
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value="{{ form_data.get('email', '') }}"
+                >
+                <div class="error">{{ errors.get('email', '') }}</div>
+            </div>
 
-        <input type="radio" id="medium" name="preferred_duration" value="medium"
-               {% if form_data.get('preferred_duration') == 'medium' %}checked{% endif %}>
-        <label for="medium">Medium-term (3–6 months)</label><br>
+            <div class="form-group">
+                <label for="experience_level">Experience Level *</label>
+                <select id="experience_level" name="experience_level">
+                    <option value="">Select your level</option>
+                    <option value="junior" {% if form_data.get('experience_level') == 'junior' %}selected{% endif %}>Junior (0–2 years)</option>
+                    <option value="mid" {% if form_data.get('experience_level') == 'mid' %}selected{% endif %}>Mid-level (2–5 years)</option>
+                    <option value="senior" {% if form_data.get('experience_level') == 'senior' %}selected{% endif %}>Senior (5+ years)</option>
+                </select>
+                <div class="error">{{ errors.get('experience_level', '') }}</div>
+            </div>
 
-        <input type="radio" id="long" name="preferred_duration" value="long"
-               {% if form_data.get('preferred_duration') == 'long' %}checked{% endif %}>
-        <label for="long">Long-term (6+ months)</label><br><br>
+            <div class="form-group">
+                <label for="primary_stack">Primary Technology Stack *</label>
+                <select id="primary_stack" name="primary_stack">
+                    <option value="">Choose one</option>
+                    <option value="backend" {% if form_data.get('primary_stack') == 'backend' %}selected{% endif %}>Backend Development</option>
+                    <option value="frontend" {% if form_data.get('primary_stack') == 'frontend' %}selected{% endif %}>Frontend Development</option>
+                    <option value="fullstack" {% if form_data.get('primary_stack') == 'fullstack' %}selected{% endif %}>Full-Stack Development</option>
+                    <option value="data" {% if form_data.get('primary_stack') == 'data' %}selected{% endif %}>Data Engineering</option>
+                    <option value="devops" {% if form_data.get('primary_stack') == 'devops' %}selected{% endif %}>DevOps</option>
+                    <option value="mobile" {% if form_data.get('primary_stack') == 'mobile' %}selected{% endif %}>Mobile Development</option>
+                </select>
+                <div class="error">{{ errors.get('primary_stack', '') }}</div>
+            </div>
 
-        <label for="additional_skills">Additional Skills</label><br>
-        <input
-            type="text"
-            id="additional_skills"
-            name="additional_skills"
-            value="{{ form_data.get('additional_skills', '') }}"
-        ><br><br>
+            <div class="form-group">
+                <label for="projects">Available Projects *</label>
+                <select id="projects" name="project_ids" multiple size="8">
+                    {% for project in projects %}
+                        <option
+                            value="{{ project.id }}"
+                            {% if project.id in form_data.get('project_ids', []) %}selected{% endif %}
+                        >
+                            {{ project.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <div class="error">{{ errors.get('project_ids', '') }}</div>
+            </div>
 
-        <button type="submit">Submit</button>
-    </form>
+            <div class="form-group">
+                <label>Preferred Project Duration *</label>
+
+                <div>
+                    <input type="radio" id="short" name="preferred_duration" value="short"
+                           {% if form_data.get('preferred_duration') == 'short' %}checked{% endif %}>
+                    <label for="short">Short-term (1–3 months)</label>
+                </div>
+
+                <div>
+                    <input type="radio" id="medium" name="preferred_duration" value="medium"
+                           {% if form_data.get('preferred_duration') == 'medium' %}checked{% endif %}>
+                    <label for="medium">Medium-term (3–6 months)</label>
+                </div>
+
+                <div>
+                    <input type="radio" id="long" name="preferred_duration" value="long"
+                           {% if form_data.get('preferred_duration') == 'long' %}checked{% endif %}>
+                    <label for="long">Long-term (6+ months)</label>
+                </div>
+
+                <div class="error">{{ errors.get('preferred_duration', '') }}</div>
+            </div>
+
+            <div class="form-group">
+                <label for="additional_skills">Additional Skills</label>
+                <input
+                    type="text"
+                    id="additional_skills"
+                    name="additional_skills"
+                    value="{{ form_data.get('additional_skills', '') }}"
+                >
+            </div>
+
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+
+    <script src="/static/app.js"></script>
 </body>
 </html>
