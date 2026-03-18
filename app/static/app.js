@@ -1,3 +1,6 @@
+// Client-side validation for the form
+// Prevents submission if required fields are missing or invalid
+
 document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("assignmentForm");
 

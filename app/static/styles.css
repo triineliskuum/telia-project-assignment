@@ -1,3 +1,6 @@
+/* Basic styling for the form UI
+   Includes layout, spacing, buttons, and error messages */
+
 body {
     font-family: Arial, sans-serif;
     background: #f4f6f8;

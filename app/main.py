@@ -1,3 +1,13 @@
+"""
+Main FastAPI application.
+
+Handles:
+- routing
+- form rendering (GET /)
+- form submission (POST /submit)
+- database interaction
+"""
+
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -8,6 +18,8 @@ from . import models
 from .models import Project, Employee
 
 app = FastAPI()
+
+# Mount static files (CSS and JavaScript)
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 Base.metadata.create_all(bind=engine)
@@ -15,6 +27,12 @@ Base.metadata.create_all(bind=engine)
 templates = Jinja2Templates(directory="app/templates")
 
 def render_form(request: Request, db, form_data=None, errors=None, success_message=None):
+    """
+    Helper function to render the form with:
+    - pre-filled data
+    - validation errors
+    - success message
+    """
     projects = db.query(Project).all()
 
     if form_data is None:
@@ -36,6 +54,12 @@ def render_form(request: Request, db, form_data=None, errors=None, success_messa
 
 @app.get("/", response_class=HTMLResponse)
 def show_form(request: Request):
+    """
+    Renders the main form page.
+
+    Loads all available projects from the database
+    and passes them to the template.
+    """
     db = SessionLocal()
     try:
         return render_form(request, db)
@@ -54,6 +78,16 @@ def submit_form(
     additional_skills: str = Form(""),
     project_ids: list[int] = Form([])
 ):
+    """
+    Handles form submission.
+
+    Logic:
+    1. Validate input data
+    2. If validation fails → return form with errors
+    3. If email does not exist → create new employee
+    4. If email exists → update existing employee
+    5. Update selected projects (many-to-many relationship)
+    """
     db = SessionLocal()
     try:
         errors = {}
@@ -72,6 +106,8 @@ def submit_form(
             "project_ids": project_ids
         }
 
+        # Server-side validation
+        # Ensures all required fields are filled and valid
         if not full_name:
             errors["full_name"] = "Full name is required."
 
@@ -95,9 +131,11 @@ def submit_form(
         if errors:
             return render_form(request, db, form_data=form_data, errors=errors)
 
+        # Check if employee already exists (based on email)
         employee = db.query(Employee).filter(Employee.email == email).first()
         selected_projects = db.query(Project).filter(Project.id.in_(project_ids)).all()
 
+        # Create new employee if not found
         if employee is None:
             employee = Employee(
                 full_name=full_name,
@@ -110,12 +148,14 @@ def submit_form(
             )
             db.add(employee)
             success_message = "Profile saved successfully."
+        # Update existing employee if found
         else:
             employee.full_name = full_name
             employee.experience_level = experience_level
             employee.primary_stack = primary_stack
             employee.preferred_duration = preferred_duration
             employee.additional_skills = additional_skills
+            # Assign selected projects to employee (replaces previous selections)
             employee.projects = selected_projects
             success_message = "Profile updated successfully."
 
