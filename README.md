@@ -1,4 +1,4 @@
-# telia-project-assignment
+# Telia project assignment
 
 ## Description
 A FastAPI-based web application where employees can submit their profiles and select projects.
